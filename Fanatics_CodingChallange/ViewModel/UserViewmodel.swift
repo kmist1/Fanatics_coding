@@ -38,12 +38,15 @@ class UserViewModel: ObservableObject {
         }
     }
 
-    func postUsersData(with users: [User]) {
-        apiHandler.updateUser(user: users[users.count - 1], httpMethod: .PATCH)
+    // Ppdate last user's data
+    func updateUserData(with users: [User]) {
+        let user = self.users[users.count - 1]
+        apiHandler.updateUser(user: user, httpMethod: .PUT)
     }
 
+    // Delete last user
     func deleteUser() {
         let user = self.users[users.count - 1]
-        apiHandler.deleteUser(user: user, httpMethod: .DELET)
+        apiHandler.deleteUser(user: user, httpMethod: .DELETE)
     }
 }

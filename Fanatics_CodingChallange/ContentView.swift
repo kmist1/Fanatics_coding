@@ -21,7 +21,7 @@ struct ContentView: View {
             vm.getData()
         }
         .onChange(of: vm.users) { newValue in
-            vm.postUsersData(with: newValue)
+            vm.updateUserData(with: newValue)
             vm.deleteUser()
             vm.apiHandler.getUser(with: 5555, httpMethod: .GET) { code in
                 NSLog("\(code)")

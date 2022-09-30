@@ -14,7 +14,7 @@ enum APIHandlerError: Error {
 
 // Enum for HTTP methods
 enum HTTPMethod: String {
-    case GET, PATCH, DELET
+    case GET, PUT, DELETE
 }
 
 class APIHandler {
@@ -33,12 +33,12 @@ class APIHandler {
             return
         }
 
+        // Creating the request
         var request = URLRequest(url: url)
-
         request.httpMethod = HTTPMethod.GET.rawValue
-
         request.setValue(AuthToken.tocken, forHTTPHeaderField: "Authorization")
 
+        // Starting session data task
         session.dataTask(with: request) { (data, response, error) in
 
             guard let data = data, error == nil else {
@@ -68,57 +68,106 @@ class APIHandler {
             return
         }
 
-        var request = URLRequest(url: url)
+        // Convert model to JSON data
+        guard let jsonData = try? JSONEncoder().encode(user) else {
+            print("Error: Trying to convert model to JSON data")
+            return
+        }
 
+        // Create the request
+        var request = URLRequest(url: url)
         request.httpMethod = httpMethod.rawValue
 
-        request.httpBody = try? JSONEncoder().encode(user)
-
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(AuthToken.tocken, forHTTPHeaderField: "Authorization")
+        request.httpBody = jsonData
 
-        session.dataTask(with: request) { (data, response, error) in
-
-            guard let data = data, error == nil else {
+        // Starting session data task
+        session.dataTask(with: request) { data, response, error in
+            guard error == nil else {
+                print("Error: error calling PATCH")
+                print(error!)
                 return
             }
-
-            if let httpResponse = response as? HTTPURLResponse {
-                print("update response code: \(httpResponse.statusCode)")
+            guard let data = data else {
+                print("Error: Did not receive data")
+                return
             }
-
+            guard let response = response as? HTTPURLResponse, (200 ..< 299) ~= response.statusCode else {
+                print("Error: HTTP request failed")
+                if let response = response as? HTTPURLResponse {
+                    print("Update error response code: \(response.statusCode)")
+                }
+                return
+            }
             do {
-                let deocodedData = try JSONDecoder().decode(User.self, from: data)
-                print(deocodedData)
+                guard let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    print("Error: Cannot convert data to JSON object")
+                    return
+                }
+                guard let prettyJsonData = try? JSONSerialization.data(withJSONObject: jsonObject, options: .prettyPrinted) else {
+                    print("Error: Cannot convert JSON object to Pretty JSON data")
+                    return
+                }
+                guard let prettyPrintedJson = String(data: prettyJsonData, encoding: .utf8) else {
+                    print("Error: Could print JSON in String")
+                    return
+                }
+
+                print(prettyPrintedJson)
             } catch {
-               debugPrint(error)
+                print("Error: Trying to convert JSON data to string")
+                return
             }
         }.resume()
     }
 
     func deleteUser(user: User, httpMethod: HTTPMethod) {
         guard let url = URL(string: "https://gorest.co.in/public/v2/users/\(user.id)") else {
-            debugPrint("Invalid URL")
+            print("Error: cannot create URL")
             return
         }
-
+        // Create the request
         var request = URLRequest(url: url)
-
         request.httpMethod = httpMethod.rawValue
-
         request.setValue(AuthToken.tocken, forHTTPHeaderField: "Authorization")
 
-        session.dataTask(with: request) { (data, response, error) in
-
-            guard let data = data, error == nil else {
-                print("Error: \(error)")
+        // Starting session data task
+        session.dataTask(with: request) { data, response, error in
+            guard error == nil else {
+                print("Error: error calling DELETE")
+                print(error!)
                 return
             }
-
+            guard let data = data else {
+                print("Error: Did not receive data")
+                return
+            }
+            guard let response = response as? HTTPURLResponse, (200 ..< 299) ~= response.statusCode else {
+                print("Error: HTTP request failed")
+                if let response = response as? HTTPURLResponse {
+                    print("Delete error response code: \(response.statusCode)")
+                }
+                return
+            }
             do {
-                let deocodedData = try JSONDecoder().decode(User.self, from: data)
-                print(deocodedData)
+                guard let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    print("Error: Cannot convert data to JSON")
+                    return
+                }
+                guard let prettyJsonData = try? JSONSerialization.data(withJSONObject: jsonObject, options: .prettyPrinted) else {
+                    print("Error: Cannot convert JSON object to Pretty JSON data")
+                    return
+                }
+                guard let prettyPrintedJson = String(data: prettyJsonData, encoding: .utf8) else {
+                    print("Error: Could print JSON in String")
+                    return
+                }
+
+                print(prettyPrintedJson)
             } catch {
-               debugPrint(error)
+                print("Error: Trying to convert JSON data to string")
+                return
             }
         }.resume()
     }
@@ -129,12 +178,12 @@ class APIHandler {
             return
         }
 
+        // Create the request
         var request = URLRequest(url: url)
-
         request.httpMethod = httpMethod.rawValue
-
         request.setValue(AuthToken.tocken, forHTTPHeaderField: "Authorization")
 
+        // Starting session data task
         session.dataTask(with: request) { (data, response, error) in
 
             guard error == nil else {
