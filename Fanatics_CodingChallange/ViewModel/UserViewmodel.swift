@@ -35,6 +35,9 @@ class UserViewModel: ObservableObject {
 
                     // update user and post data
                     users[data.count - 1].name = "Jenn Mistry"
+
+                    // make update on users with updated name
+                    self?.users = users
                 }
             }
         }
@@ -43,6 +46,7 @@ class UserViewModel: ObservableObject {
     // Update last user's data
     func updateUserData(with users: [User]) {
         let user = self.users[users.count - 1]
+        print(user.name)
         apiHandler.updateUser(user: user, httpMethod: .PUT) { success in
             if success {
                 // if user is updated, delete the user
