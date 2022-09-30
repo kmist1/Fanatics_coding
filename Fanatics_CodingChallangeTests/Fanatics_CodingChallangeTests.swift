@@ -61,17 +61,18 @@ final class Fanatics_CodingChallangeTests: XCTestCase {
 
         userVM?.apiHandler = handler
 
-        userVM?.getData()
+        userVM?.getData() { success in
+            if success {
+                guard let users = self.userVM?.users else { return }
 
-        // using delay to complete aynchronus task, after we can test functionality
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 5) {
-            guard let users = self.userVM?.users else { return }
-
-            XCTAssertEqual(users[users.count - 1].name, "Sarala Chopra")
+                XCTAssertEqual(users[users.count - 1].name, "Sarala Chopra")
+            }
         }
     }
 
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
+        urlSession = nil
+        userVM = nil
     }
 }

@@ -19,6 +19,7 @@ enum HTTPMethod: String {
 
 class APIHandler {
 
+    // MARK: - Properties
     static let shared = APIHandler()
     var session = URLSession.shared
 
@@ -26,6 +27,8 @@ class APIHandler {
 
     typealias Completion<T: Codable> = ((Result<T, Error>) -> Void)?
 
+    // MARK: - Methods
+    // Getting all users from page 3
     func getAllPageThreeUsers(url: String, completionHandler: @escaping (Result<[User], Error>) -> ()) {
 
         guard let url = URL(string: url + "page=3") else {
@@ -61,8 +64,8 @@ class APIHandler {
         }.resume()
     }
 
-
-    func updateUser(user: User, httpMethod: HTTPMethod) {
+    // Updating user with given user id
+    func updateUser(user: User, httpMethod: HTTPMethod, completionHandler : @escaping (_ success: Bool) -> ()) {
         guard let url = URL(string: "https://gorest.co.in/public/v2/users/\(user.id)") else {
             debugPrint("Invalid URL")
             return
@@ -96,7 +99,7 @@ class APIHandler {
             guard let response = response as? HTTPURLResponse, (200 ..< 299) ~= response.statusCode else {
                 print("Error: HTTP request failed")
                 if let response = response as? HTTPURLResponse {
-                    print("Update error response code: \(response.statusCode)")
+                    print("Error: Updating user response code: \(response.statusCode)")
                 }
                 return
             }
@@ -115,6 +118,7 @@ class APIHandler {
                 }
 
                 print(prettyPrintedJson)
+                completionHandler(true)
             } catch {
                 print("Error: Trying to convert JSON data to string")
                 return
@@ -122,6 +126,7 @@ class APIHandler {
         }.resume()
     }
 
+    // Deleting user with user Id
     func deleteUser(user: User, httpMethod: HTTPMethod) {
         guard let url = URL(string: "https://gorest.co.in/public/v2/users/\(user.id)") else {
             print("Error: cannot create URL")
@@ -146,7 +151,7 @@ class APIHandler {
             guard let response = response as? HTTPURLResponse, (200 ..< 299) ~= response.statusCode else {
                 print("Error: HTTP request failed")
                 if let response = response as? HTTPURLResponse {
-                    print("Delete error response code: \(response.statusCode)")
+                    print("Error: Deleting user response code: \(response.statusCode)")
                 }
                 return
             }
@@ -172,6 +177,7 @@ class APIHandler {
         }.resume()
     }
 
+    // Get user data with user id
     func getUser(with id: Int, httpMethod: HTTPMethod, completion: @escaping (Int) -> ()) {
         guard let url = URL(string: "https://gorest.co.in/public/v2/users/\(id)") else {
             debugPrint("Invalid URL")

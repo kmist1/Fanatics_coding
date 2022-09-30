@@ -18,11 +18,10 @@ struct ContentView: View {
         }
         .padding()
         .onAppear {
-            vm.getData()
+            vm.getData() { _ in }
         }
         .onChange(of: vm.users) { newValue in
             vm.updateUserData(with: newValue)
-            vm.deleteUser()
             vm.apiHandler.getUser(with: 5555, httpMethod: .GET) { code in
                 NSLog("\(code)")
             }

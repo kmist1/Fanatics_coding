@@ -16,13 +16,15 @@ class UserViewModel: ObservableObject {
 
     //MARK: Methods
     ///We use this method to get User data from API
-    func getData() {
+    func getData(completionHandler : @escaping (_ success: Bool) -> ()) {
         apiHandler.getAllPageThreeUsers(url: Endpoints.users.rawValue) { [weak self] data in
             switch data {
             case .failure(let error):
                 self?.error = error
             case .success(let data):
                 DispatchQueue.main.async {
+
+                    completionHandler(true)
 
                     // sorting users by name
                     self?.users = data.sorted { $0.name < $1.name }
@@ -38,15 +40,19 @@ class UserViewModel: ObservableObject {
         }
     }
 
-    // Ppdate last user's data
+    // Update last user's data
     func updateUserData(with users: [User]) {
         let user = self.users[users.count - 1]
-        apiHandler.updateUser(user: user, httpMethod: .PUT)
+        apiHandler.updateUser(user: user, httpMethod: .PUT) { success in
+            if success {
+                // if user is updated, delete the user
+                self.deleteUser(user: user)
+            }
+        }
     }
 
     // Delete last user
-    func deleteUser() {
-        let user = self.users[users.count - 1]
+    func deleteUser(user: User) {
         apiHandler.deleteUser(user: user, httpMethod: .DELETE)
     }
 }
